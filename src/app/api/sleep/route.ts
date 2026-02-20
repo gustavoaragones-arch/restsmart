@@ -4,7 +4,7 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
-import { triggerRecoveryRecalculation } from "@/lib/recoveryEngine/trigger";
+import { triggerRecoveryRecalculation } from "@/lib/recovery/trigger";
 import { NextResponse } from "next/server";
 
 export async function GET() {
