@@ -1,6 +1,9 @@
 "use client";
 
 import { useRecovery } from "@/lib/hooks/useRecovery";
+import { useRecoveryHistory } from "@/lib/hooks/useRecoveryHistory";
+import { RecoveryTrendChart } from "@/components/recovery/RecoveryTrendChart";
+import { SleepDebtChart } from "@/components/recovery/SleepDebtChart";
 import type { RecoveryEngineOutput } from "@/types/recovery";
 
 const RECOMMENDATION_LABEL: Record<string, string> = {
@@ -70,6 +73,8 @@ export default function DashboardPage() {
         <CnsCard cnsScore={data.cnsScore} projectedFullRecovery={data.projectedFullRecovery} />
         <SleepSection sleepScore={data.sleepScore} sleepDebt={data.sleepDebt} stressScore={data.stressScore} />
         <SafetyFlags overtrainingFlag={data.overtrainingFlag} deloadFlag={data.deloadFlag} />
+        <RecoveryTrendSection />
+        <SleepDebtTrendSection />
       </div>
     </main>
   );
@@ -227,6 +232,44 @@ function SleepSection({
           : "No significant sleep debt."}
       </p>
       <p className="mt-3 text-sm text-slate-400">Stress score: {stress}/100</p>
+    </section>
+  );
+}
+
+function RecoveryTrendSection() {
+  const { points, loading } = useRecoveryHistory("7d");
+
+  return (
+    <section className="rounded-lg bg-restsmart-card p-6">
+      <h2 className="text-lg font-medium text-slate-300">Recovery Trend (7 Days)</h2>
+      {loading ? (
+        <div className="mt-4 h-48 animate-pulse rounded bg-slate-700/50" />
+      ) : points.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-500">No recovery history yet.</p>
+      ) : (
+        <div className="mt-4">
+          <RecoveryTrendChart points={points} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SleepDebtTrendSection() {
+  const { points, loading } = useRecoveryHistory("7d");
+
+  return (
+    <section className="rounded-lg bg-restsmart-card p-6">
+      <h2 className="text-lg font-medium text-slate-300">Sleep Debt (7 Days)</h2>
+      {loading ? (
+        <div className="mt-4 h-48 animate-pulse rounded bg-slate-700/50" />
+      ) : points.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-500">No sleep debt history yet.</p>
+      ) : (
+        <div className="mt-4">
+          <SleepDebtChart points={points} />
+        </div>
+      )}
     </section>
   );
 }

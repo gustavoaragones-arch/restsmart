@@ -2,6 +2,16 @@
  * Typed recovery API response — matches GET /api/recovery/calculate
  */
 
+export interface RecoveryHistoryPoint {
+  date: string;
+  overallScore: number;
+  muscularScore: number;
+  cnsScore: number;
+  sleepScore: number;
+  stressScore: number;
+  sleepDebt: number;
+}
+
 export interface RecoveryEngineOutput {
   muscularScore: number;
   muscleBreakdown: Record<string, number>;
