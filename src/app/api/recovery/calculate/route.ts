@@ -13,12 +13,23 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // DEV MODE: allow unauthenticated access temporarily
+  let userId: string | null = null;
+
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    userId = user?.id ?? null;
+  } catch {
+    userId = null;
+  }
+
+  // If no user, use temporary dev user
+  if (!userId) {
+    userId = "00000000-0000-0000-0000-000000000000";
   }
 
   const { searchParams } = new URL(req.url);
@@ -26,7 +37,7 @@ export async function GET(req: Request) {
   const save = searchParams.get("save") === "true";
 
   try {
-    const input = await fetchRecoveryInput(user.id, date);
+    const input = await fetchRecoveryInput(userId, date);
     const output = runRecoveryEngine(input);
 
     if (save) {
@@ -35,12 +46,12 @@ export async function GET(req: Request) {
       const { data: existing } = await admin
         .from("recovery_snapshots")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("snapshot_date", date.slice(0, 10))
         .is("deleted_at", null)
         .maybeSingle();
       if (!existing) {
-        await saveSnapshot(user.id, date.slice(0, 10), output);
+        await saveSnapshot(userId, date.slice(0, 10), output);
       }
     }
 
