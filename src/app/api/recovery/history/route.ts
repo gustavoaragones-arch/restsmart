@@ -40,11 +40,11 @@ export async function GET(req: Request) {
     const admin = createAdminClient();
     const { data: rows, error } = await admin
       .from("recovery_snapshots")
-      .select("snapshot_date, readiness_score, sleep_score, stress_score, sleep_debt, raw_data")
+      .select("snapshot_date, calculated_at, readiness_score, sleep_score, stress_score, sleep_debt, raw_data")
       .eq("user_id", userId)
       .is("deleted_at", null)
       .gte("snapshot_date", startStr)
-      .order("snapshot_date", { ascending: true });
+      .order("calculated_at", { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

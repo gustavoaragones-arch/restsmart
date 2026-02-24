@@ -75,6 +75,7 @@ export default function DashboardPage() {
         <SafetyFlags overtrainingFlag={data.overtrainingFlag} deloadFlag={data.deloadFlag} />
         <RecoveryTrendSection />
         <SleepDebtTrendSection />
+        <HabitsSection data={data} />
       </div>
     </main>
   );
@@ -233,6 +234,122 @@ function SleepSection({
       </p>
       <p className="mt-3 text-sm text-slate-400">Stress score: {stress}/100</p>
     </section>
+  );
+}
+
+function streakBadgeClass(streak: number): string {
+  if (streak >= 7) return "border-restsmart-green/40 bg-restsmart-green/10 text-slate-200";
+  if (streak >= 3) return "border-slate-500/40 bg-slate-700/30 text-slate-300";
+  return "border-slate-600/30 bg-slate-800/20 text-slate-500";
+}
+
+function HabitsSection({ data }: { data: RecoveryEngineOutput }) {
+  const b = data.behavior ?? {
+    recoveryCompliant: false,
+    sleepTargetMet: false,
+    balancedTraining: false,
+  };
+  const s = data.streaks ?? {
+    recoveryStreak: 0,
+    sleepStreak: 0,
+    balanceStreak: 0,
+  };
+  return (
+    <section className="rounded-lg bg-restsmart-card p-6">
+      <h2 className="text-lg font-medium text-slate-300">Habits</h2>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div
+          className={`rounded-lg border p-4 ${
+            b.recoveryCompliant
+              ? "border-restsmart-green/40 bg-restsmart-green/10"
+              : "border-restsmart-yellow/40 bg-restsmart-yellow/10"
+          }`}
+        >
+          <p className="text-sm font-medium text-slate-200">Recovery Discipline</p>
+          <p className="mt-1 text-sm text-slate-400">
+            {b.recoveryCompliant ? "Aligned with recovery guidance" : "Training misaligned with recovery"}
+          </p>
+        </div>
+        <div
+          className={`rounded-lg border p-4 ${
+            b.sleepTargetMet
+              ? "border-restsmart-green/40 bg-restsmart-green/10"
+              : "border-restsmart-yellow/40 bg-restsmart-yellow/10"
+          }`}
+        >
+          <p className="text-sm font-medium text-slate-200">Sleep Discipline</p>
+          <p className="mt-1 text-sm text-slate-400">
+            {b.sleepTargetMet ? "Sleep target met" : "Sleep debt accumulating"}
+          </p>
+        </div>
+        <div
+          className={`rounded-lg border p-4 ${
+            b.balancedTraining
+              ? "border-restsmart-green/40 bg-restsmart-green/10"
+              : "border-restsmart-yellow/40 bg-restsmart-yellow/10"
+          }`}
+        >
+          <p className="text-sm font-medium text-slate-200">Training Balance</p>
+          <p className="mt-1 text-sm text-slate-400">
+            {b.balancedTraining ? "Balanced training pattern" : "Training load imbalance"}
+          </p>
+        </div>
+      </div>
+      <h3 className="mt-6 text-base font-medium text-slate-400">Consistency</h3>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className={`rounded-lg border p-3 ${streakBadgeClass(s.recoveryStreak)}`}>
+          <p className="text-sm font-medium">
+            {s.recoveryStreak} day recovery alignment
+          </p>
+        </div>
+        <div className={`rounded-lg border p-3 ${streakBadgeClass(s.sleepStreak)}`}>
+          <p className="text-sm font-medium">
+            {s.sleepStreak} day sleep discipline
+          </p>
+        </div>
+        <div className={`rounded-lg border p-3 ${streakBadgeClass(s.balanceStreak)}`}>
+          <p className="text-sm font-medium">
+            {s.balanceStreak} day balanced load
+          </p>
+        </div>
+      </div>
+      <DeloadSection data={data} />
+    </section>
+  );
+}
+
+function DeloadSection({ data }: { data: RecoveryEngineOutput }) {
+  const d = data.deload ?? {
+    active: false,
+    recommended: false,
+    suggestedReductionPercent: null,
+  };
+  const pct =
+    d.suggestedReductionPercent != null ? `${d.suggestedReductionPercent}%` : null;
+
+  return (
+    <>
+      <h3 className="mt-6 text-base font-medium text-slate-400">Deload Status</h3>
+      {d.active ? (
+        <div className="mt-3 rounded-lg border border-restsmart-green/30 bg-slate-700/20 p-4">
+          <p className="text-sm font-medium text-slate-200">Deload cycle active</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Suggested volume reduction: {pct ?? "—"}
+          </p>
+        </div>
+      ) : d.recommended ? (
+        <div className="mt-3 rounded-lg border border-restsmart-yellow/40 bg-restsmart-yellow/10 p-4">
+          <p className="text-sm font-medium text-slate-200">Deload recommended</p>
+          <p className="mt-1 text-sm text-slate-400">
+            {d.suggestedReductionPercent != null
+              ? `Accumulated fatigue trend detected. Suggested reduction: ${d.suggestedReductionPercent}%`
+              : "Accumulated fatigue trend detected"}
+          </p>
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-slate-500">No deload cycle needed</p>
+      )}
+    </>
   );
 }
 
