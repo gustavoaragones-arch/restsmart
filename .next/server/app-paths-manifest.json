@@ -1,0 +1,17 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
+  "/(app)/log-workout/page": "app/(app)/log-workout/page.js",
+  "/(app)/settings/page": "app/(app)/settings/page.js",
+  "/(app)/sleep/page": "app/(app)/sleep/page.js",
+  "/(app)/recovery/page": "app/(app)/recovery/page.js",
+  "/api/stripe/create-checkout/route": "app/api/stripe/create-checkout/route.js",
+  "/(onboarding)/onboarding/page": "app/(onboarding)/onboarding/page.js",
+  "/api/stripe/create-portal/route": "app/api/stripe/create-portal/route.js",
+  "/auth/callback/route": "app/auth/callback/route.js",
+  "/page": "app/page.js",
+  "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
+  "/(auth)/callback/route": "app/(auth)/callback/route.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/signup/page": "app/(auth)/signup/page.js"
+}

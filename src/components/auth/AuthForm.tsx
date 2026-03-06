@@ -6,14 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 
 type AuthMode = 'login' | 'signup'
 
-interface AuthFormProps {
-  mode: AuthMode
-}
-
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter()
   const supabase = createClient()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -26,31 +21,18 @@ export function AuthForm({ mode }: AuthFormProps) {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     if (mode === 'signup') {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        email, password,
+        options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
-      if (error) {
-        setError(error.message)
-      } else {
-        setSuccessMessage('Check your email to confirm your account.')
-      }
+      if (error) setError(error.message)
+      else setSuccessMessage('Check your email to confirm your account.')
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(error.message)
-      } else {
-        router.push('/dashboard')
-        router.refresh()
-      }
+      if (error) setError(error.message)
+      else { router.push('/dashboard'); router.refresh() }
     }
-
     setLoading(false)
   }
 
@@ -59,51 +41,26 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError(null)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
-    if (error) {
-      setError(error.message)
-      setGoogleLoading(false)
-    }
+    if (error) { setError(error.message); setGoogleLoading(false) }
   }
 
   if (successMessage) {
     return (
       <div className="w-full max-w-sm mx-auto text-center">
-        <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mx-auto mb-6">
-          <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
         <h3 className="text-white font-semibold text-lg mb-2">Check your email</h3>
-        <p className="text-slate-400 text-sm leading-relaxed">
-          We sent a confirmation link to <span className="text-slate-200">{email}</span>.
-          Click it to activate your account.
-        </p>
-        <button
-          onClick={() => { setSuccessMessage(null); setEmail(''); setPassword(''); }}
-          className="mt-6 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          Back to sign in
-        </button>
+        <p className="text-slate-400 text-sm">We sent a confirmation link to <span className="text-slate-200">{email}</span>.</p>
+        <button onClick={() => { setSuccessMessage(null); setEmail(''); setPassword('') }} className="mt-6 text-sm text-blue-400 hover:text-blue-300">Back to sign in</button>
       </div>
     )
   }
 
   return (
     <div className="w-full max-w-sm mx-auto">
-
-      {/* Google OAuth */}
-      <button
-        onClick={handleGoogleAuth}
-        disabled={googleLoading || loading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:border-slate-600 transition-all text-sm font-medium text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-      >
-        {googleLoading ? (
-          <span className="w-4 h-4 border-2 border-slate-500 border-t-slate-200 rounded-full animate-spin" />
-        ) : (
+      <button onClick={handleGoogleAuth} disabled={googleLoading || loading}
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-all text-sm font-medium text-slate-200 disabled:opacity-50 mb-6">
+        {googleLoading ? <span className="w-4 h-4 border-2 border-slate-500 border-t-slate-200 rounded-full animate-spin" /> : (
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -113,89 +70,36 @@ export function AuthForm({ mode }: AuthFormProps) {
         )}
         {googleLoading ? 'Connecting...' : 'Continue with Google'}
       </button>
-
-      {/* Divider */}
       <div className="flex items-center gap-4 mb-6">
         <div className="flex-1 h-px bg-slate-800" />
-        <span className="text-xs text-slate-600 font-medium">or</span>
+        <span className="text-xs text-slate-600">or</span>
         <div className="flex-1 h-px bg-slate-800" />
       </div>
-
-      {/* Email form */}
       <form onSubmit={handleEmailAuth} className="space-y-4">
         {mode === 'signup' && (
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
-              Full name
-            </label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              placeholder="Your name"
-              required
-              className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-            />
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Full name</label>
+            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your name" required
+              className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 transition-all" />
           </div>
         )}
-
         <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1.5">
-            Email address
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-          />
+          <label className="block text-xs font-medium text-slate-400 mb-1.5">Email address</label>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required
+            className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 transition-all" />
         </div>
-
         <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1.5">
-            Password
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder={mode === 'signup' ? 'Minimum 8 characters' : 'Your password'}
-            required
-            minLength={8}
-            className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-          />
+          <label className="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={mode === 'signup' ? 'Minimum 8 characters' : 'Your password'} required minLength={8}
+            className="w-full px-4 py-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 transition-all" />
         </div>
-
-        {/* Error */}
-        {error && (
-          <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20">
-            <p className="text-red-400 text-xs leading-relaxed">{error}</p>
-          </div>
-        )}
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || googleLoading}
-          className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-        >
-          {loading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              {mode === 'signup' ? 'Creating account...' : 'Signing in...'}
-            </>
-          ) : (
-            mode === 'signup' ? 'Create account' : 'Sign in'
-          )}
+        {error && <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20"><p className="text-red-400 text-xs">{error}</p></div>}
+        <button type="submit" disabled={loading || googleLoading}
+          className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
+          {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{mode === 'signup' ? 'Creating...' : 'Signing in...'}</> : mode === 'signup' ? 'Create account' : 'Sign in'}
         </button>
       </form>
-
-      {/* Privacy note */}
-      <p className="text-center text-xs text-slate-600 mt-6 leading-relaxed">
-        Your health data is encrypted and never sold.
-      </p>
+      <p className="text-center text-xs text-slate-600 mt-6">Your health data is encrypted and never sold.</p>
     </div>
   )
 }
